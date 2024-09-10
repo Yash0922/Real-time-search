@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Real-time Search with Debouncing and Promises</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; }
+        #search-input { width: 100%; padding: 10px; font-size: 16px; }
+        #results { margin-top: 20px; }
+    </style>
+</head>
+<body>
+    <h1>Real-time Search</h1>
+    <input type="text" id="search-input" placeholder="Type to search...">
+    <div id="results"></div>
+
+    <script>
+        
+        function debounce(func, delay) {
+            let timeoutId;
+            return function (...args) {
+                clearTimeout(timeoutId);
+                timeoutId = setTimeout(() => func.apply(this, args), delay);
+            };
+        }
+
+        
+        function simulateAPICall(query) {
+            return new Promise((resolve) => {
+                setTimeout(() => {
+                    const results = [
+                        "apple", "apricot", "application", "apartment", "appetizer",
+                        "append", "approve", "appreciate", "approach", "appropriate"
+                    ].filter(item => item.startsWith(query.toLowerCase()));
+                    resolve(results);
+                }, 1000);
+            });
+        }
+
+        function updateResults(results) {
+            const resultsElement = document.getElementById('results');
+            resultsElement.innerHTML = results.length > 0
+                ? `<h3>Results:</h3><ol>${results.map(item => `<li>${item}</li>`).join('')}</ol>`
+                : '<p>No results found.</p>';
+        }
+
+       
+        const search = debounce(async (query) => {
+            if (query.length === 0) {
+                updateResults([]);
+                return;
+            }
+            try {
+                const results = await simulateAPICall(query);
+                updateResults(results);
+            } catch (error) {
+                console.error('Error fetching results:', error);
+                updateResults([]);
+            }
+        }, 500);
+
+    
+        document.getElementById('search-input').addEventListener('input', (e) => {
+            search(e.target.value);
+        });
+    </script>
+</body>
+</html>
